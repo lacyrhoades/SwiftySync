@@ -35,15 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         if let mainVC = (self.window?.rootViewController as? ViewController) {
-            sync?.basePath = mainVC.defaultBasePath ?? ""
-            
             mainVC.sync = sync
-            
-            sync?.collection = {
-                return AssetSyncItem.items(forAssetIDs: mainVC.assetBackend.selectedAssetIDs)
-            }
-            
-            sync?.beginSyncing()
         }
     }
     

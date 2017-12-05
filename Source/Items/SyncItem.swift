@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol SyncItem: Hashable {    
-    var filename: String {get}
+public protocol SyncItem: Hashable {
+    var filename: String { get }
     func fetchData() -> DataFetchResult
 }

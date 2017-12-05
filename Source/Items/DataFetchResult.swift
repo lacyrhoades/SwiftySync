@@ -8,9 +8,9 @@
 
 import Foundation
 
-struct DataFetchResult {
-    var data: Data? = nil
-    var error: String? = nil
+public struct DataFetchResult {
+    public var data: Data? = nil
+    public var error: String? = nil
     
     init() {
     }
@@ -21,5 +21,13 @@ struct DataFetchResult {
     
     var isEmpty: Bool {
         return self.data?.isEmpty ?? true
+    }
+    
+    var validData: Data? {
+        if self.isEmpty {
+            return nil
+        } else {
+            return self.data
+        }
     }
 }

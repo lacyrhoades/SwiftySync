@@ -19,4 +19,10 @@ class AssetCell: UITableViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
+    
+    var isDownloading: Bool = false {
+        didSet {
+            self.backgroundColor = isDownloading ? .lightGray : .white
+        }
+    }
 }

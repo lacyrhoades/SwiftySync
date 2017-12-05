@@ -8,12 +8,12 @@
 
 import Photos
 
-struct AssetInfo {
+public struct AssetInfo {
     var createDate: Date
     var type: AssetSyncItemType
 }
 
-class AssetFetcher {
+public class AssetFetcher {
     static func info(forAssetID assetID: String) -> AssetInfo? {
         let options = PHFetchOptions()
         let request = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: options)
@@ -38,7 +38,8 @@ class AssetFetcher {
         return AssetInfo(createDate: date, type: type)
     }
     
-    static func fetchThumbnail(forID assetID: String, andThen: @escaping (_: UIImage?, _: Date?) -> ()) {
+    public static func fetchThumbnail(forID assetID: String, size: CGSize?, andThen: @escaping (_: UIImage?, _: Date?) -> ()) -> PHImageRequestID? {
+
         let options = PHFetchOptions()
         let request = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: options)
         
@@ -46,27 +47,26 @@ class AssetFetcher {
             DispatchQueue.main.async {
                 andThen(nil, nil)
             }
-            return
+            return nil
         }
         
-        let thumbnailSize = CGSize(width: 100, height: 100)
+        let size = size ?? CGSize(width: 100, height: 100)
         
         let fetchOptions = PHImageRequestOptions()
         fetchOptions.isNetworkAccessAllowed = true
-        fetchOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.fastFormat
+        fetchOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.opportunistic
         fetchOptions.isSynchronous = false
         
-        PHCachingImageManager.default().requestImage(for: asset, targetSize: thumbnailSize, contentMode: .aspectFit, options: fetchOptions) { (maybeImage, info) in
-            if let d = info?[PHImageResultIsDegradedKey] as? NSNumber, d != 0 {
-                return
-            }
+        let imageRequest = PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFit, options: fetchOptions) { (maybeImage, info) in
             DispatchQueue.main.async {
                 andThen(maybeImage, asset.creationDate)
             }
         }
+        
+        return imageRequest
     }
     
-    static func syncFetchOriginalData(forID assetID: String) -> DataFetchResult {
+    public static func syncFetchOriginalData(forID assetID: String) -> DataFetchResult {
         let options = PHFetchOptions()
         let request = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: options)
         
@@ -104,16 +104,21 @@ class AssetFetcher {
         let compress = true
         
         if compress {
-            PHCachingImageManager.default().requestImage(for: asset, targetSize: maxSize, contentMode: .aspectFit, options: options) { (maybeImage, info) in
+            PHImageManager.default().requestImage(for: asset, targetSize: maxSize, contentMode: .aspectFit, options: options) { (maybeImage, info) in
+                if let d = info?[PHImageResultIsDegradedKey] as? NSNumber, d != 0 {
+                    return
+                }
+                
                 if let image = maybeImage {
                     result.data = UIImageJPEGRepresentation(image, 0.5)
                 }
+                
                 result.error = result.isEmpty ? "Fetch failed" : nil
                 
                 waitGroup.leave()
             }
         } else {
-            PHCachingImageManager.default().requestImageData(for: asset, options: options, resultHandler: { (data, str, orientation, info) in
+            PHImageManager.default().requestImageData(for: asset, options: options, resultHandler: { (data, str, orientation, info) in
                 
                 result.data = data
                 result.error = result.isEmpty ? "Fetch failed" : nil
@@ -135,7 +140,7 @@ class AssetFetcher {
         
         let waitGroup = DispatchGroup()
         waitGroup.enter()
-        PHCachingImageManager.default().requestAVAsset(forVideo: asset, options: options, resultHandler: { (avAsset, mix, info) in
+        PHImageManager.default().requestAVAsset(forVideo: asset, options: options, resultHandler: { (avAsset, mix, info) in
             
             guard let urlAsset = avAsset as? AVURLAsset else {
                 result.error = "No AVAsset"
@@ -153,5 +158,31 @@ class AssetFetcher {
         waitGroup.wait()
         
         return result
+    }
+    
+    public static func image(forAssetID assetID: AssetID, andThen: @escaping (UIImage?) -> ()) {
+        let options = PHFetchOptions()
+        let request = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: options)
+        
+        guard let asset = request.firstObject else {
+            DispatchQueue.main.async {
+                andThen(nil)
+            }
+            return
+        }
+        
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.highQualityFormat
+        requestOptions.isSynchronous = false
+        requestOptions.isNetworkAccessAllowed = true
+        
+        let maxSize = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        
+        PHImageManager.default().requestImage(for: asset, targetSize: maxSize, contentMode: .aspectFit, options: requestOptions) { (maybeImage, info) in
+            if let d = info?[PHImageResultIsDegradedKey] as? NSNumber, d != 0 {
+                return
+            }
+            andThen(maybeImage)
+        }
     }
 }

@@ -6,18 +6,11 @@
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
 //
 
-import Foundation
-
 import Photos
 
-enum AssetSyncItemType {
-    case image
-    case video
-}
-
-struct AssetSyncItem: SyncItem {
-    var id: String
-    var filename: String
+public struct AssetSyncItem: SyncItem {
+    public var id: String
+    public var filename: String
     
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -28,9 +21,7 @@ struct AssetSyncItem: SyncItem {
     static func uniqueFilename(forDate date: Date, withType type: AssetSyncItemType, consideringFilenames existingFilenames: Set<String>) -> String {
         
         let baseFilename = AssetSyncItem.dateFormatter.string(from: date)
-        
-        let fileExtension = AssetSyncItem.fileExtension(forType: type)
-        
+        let fileExtension = AssetSyncItemType.fileExtension(forType: type)
         var filename: String
         var index = 0
         
@@ -48,24 +39,15 @@ struct AssetSyncItem: SyncItem {
         self.filename = filename
     }
     
-    static func fileExtension(forType type: AssetSyncItemType) -> String {
-        switch type {
-        case .image:
-            return "jpg"
-        case .video:
-            return "mp4"
-        }
-    }
-    
-    func fetchData() -> DataFetchResult {
+    public func fetchData() -> DataFetchResult {
         return AssetFetcher.syncFetchOriginalData(forID: self.id)
     }
     
-    var hashValue: Int {
+    public var hashValue: Int {
         return self.id.hashValue
     }
     
-    static func == (lhs: AssetSyncItem, rhs: AssetSyncItem) -> Bool {
+    public static func == (lhs: AssetSyncItem, rhs: AssetSyncItem) -> Bool {
         return lhs.id == rhs.id
     }
     

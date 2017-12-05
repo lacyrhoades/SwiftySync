@@ -18,6 +18,8 @@ class DeleteOperation<T>: SyncOperation<T> where T: SyncItem {
     }
     
     override func main() {
+        print("DeleteOperation")
+        
         let path = self.fullPath(forFilename: item.filename)
         
         let waitGroup = DispatchGroup()

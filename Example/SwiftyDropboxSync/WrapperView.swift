@@ -16,6 +16,7 @@ class WrapperView: UIStackView {
         let trailing = UIView()
         
         self.axis = axis
+        self.distribution = .fillProportionally
         
         if centered {
             self.addArrangedSubview(leading)

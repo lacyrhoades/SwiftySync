@@ -68,7 +68,7 @@ extension AssetBackend: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: AssetCell.identifier)!
         
         if let assetID = self.assetID(at: indexPath) {
-            AssetFetcher.fetchThumbnail(forID: assetID) { (thumbnail, date) in
+            let fetchID = AssetFetcher.fetchThumbnail(forID: assetID, size: CGSize(width: 200, height: 200)) { (thumbnail, date) in
                 cell.imageView?.image = thumbnail
                 if let date = date {
                     cell.textLabel?.text = AssetBackend.dateFormatter.string(from: date)
