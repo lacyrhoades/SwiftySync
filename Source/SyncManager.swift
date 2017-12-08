@@ -29,8 +29,8 @@ public class SyncManager<T> where T: SyncItem {
         self.client = client
     }
     
-    typealias LocalCollectionRefreshAction = () -> (Set<T>)
-    var fetchLocalItems: LocalCollectionRefreshAction?
+    public typealias LocalCollectionRefreshAction = () -> (Set<T>)
+    public var fetchLocalItems: LocalCollectionRefreshAction?
     
     public typealias RemoteCollectionRefreshAction = (Set<String>) -> ()
     public var refreshRemoteItems: RemoteCollectionRefreshAction?
@@ -38,8 +38,8 @@ public class SyncManager<T> where T: SyncItem {
     public typealias DownloadCompleteAction = (DownloadItemActionResult) -> ()
     public var downloadComplete: DownloadCompleteAction?
     
-    var finishedUploads: Set<T> = Set()
-    var finishedUploadsDidChange: (() -> ())?
+    public var finishedUploads: Set<T> = Set()
+    public var finishedUploadsDidChange: (() -> ())?
     
     var failedUploads: Set<T> = Set()
     var failedUploadsDidChange: (() -> ())?
@@ -50,6 +50,7 @@ public class SyncManager<T> where T: SyncItem {
     var failedDownloads: Set<String> = Set()
     var failedDownloadsDidChange: (() -> ())?
     
+    private var workQueue = DispatchQueue(label: "SwiftySync.backgroundWorkQueue")
     private var queue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
@@ -60,11 +61,13 @@ public class SyncManager<T> where T: SyncItem {
         self.syncAttempts += 1
         
         if self.queue.operationCount == 0 {
-            switch direction {
-            case .up:
-                self.syncUp()
-            case .down:
-                self.syncDown()
+            self.workQueue.async {
+                switch direction {
+                case .up:
+                    self.syncUp()
+                case .down:
+                    self.syncDown()
+                }
             }
         }
         
@@ -81,6 +84,7 @@ public class SyncManager<T> where T: SyncItem {
     public func stopSyncing() {
         self.repeatTimer?.invalidate()
         self.syncAttempts = 0
+        self.queue.cancelAllOperations()
     }
 
     func syncUp() {

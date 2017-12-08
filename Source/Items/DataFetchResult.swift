@@ -12,11 +12,15 @@ public struct DataFetchResult {
     public var data: Data? = nil
     public var error: String? = nil
     
-    init() {
+    public init() {
     }
     
-    init(error: String) {
+    public init(error: String) {
         self.error = error
+    }
+    
+    public init(data: Data) {
+        self.data = data
     }
     
     var isEmpty: Bool {

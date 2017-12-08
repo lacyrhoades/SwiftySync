@@ -19,14 +19,25 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
         super.init(basePath: basePath, client: client)
     }
     
+    override func cancel() {
+        super.cancel()
+        self.request?.cancel()
+    }
+    
+    var request: DownloadRequestMemory<Files.FileMetadataSerializer, Files.DownloadErrorSerializer>?
+    
     override func main() {
+        guard self.isCancelled == false else {
+            return
+        }
+        
         print("DownloadOperation: \(self.filename)")
         
         let waitGroup = DispatchGroup()
         
         waitGroup.enter()
         
-        let request = client.files.download(path: self.fullPath(forFilename: filename)).response(queue: self.notificationQueue, completionHandler: { (maybeResult, maybeError) in
+        self.request = client.files.download(path: self.fullPath(forFilename: filename)).response(queue: self.notificationQueue, completionHandler: { (maybeResult, maybeError) in
             if let error = maybeError {
                 print(error)
             }
@@ -47,7 +58,7 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
             break
         case .timedOut:
             print(String(format: "Downloads timed out"))
-            request.cancel()
+            request?.cancel()
         }
     }
 }

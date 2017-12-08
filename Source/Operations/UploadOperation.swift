@@ -18,7 +18,19 @@ class UploadOperation<T>: SyncOperation<T> where T: SyncItem {
         super.init(basePath: basePath, client: client)
     }
     
+    var request: UploadRequest<Files.FileMetadataSerializer, Files.UploadErrorSerializer>?
+    
+    override func cancel() {
+        super.cancel()
+        
+        self.request?.cancel()
+    }
+    
     override func main() {
+        if self.isCancelled {
+            return
+        }
+        
         print(String(format: "UploadOperation: %@", item.filename))
         
         let waitGroup = DispatchGroup()
@@ -27,14 +39,14 @@ class UploadOperation<T>: SyncOperation<T> where T: SyncItem {
         // blocking call to gather data for upload
         let fetchResult = item.fetchData()
         
-        var request: UploadRequest<Files.FileMetadataSerializer, Files.UploadErrorSerializer>?
+        
         
         if let data = fetchResult.validData {
             let path = self.fullPath(forFilename: item.filename)
             
             print(String(format: "UploadOperation: Item upload start to path: %@", path))
             
-            request = client.files.upload(path: path, input: data).response(queue: self.notificationQueue, completionHandler: { (maybeMetadata, maybeError) in
+            self.request = client.files.upload(path: path, input: data).response(queue: self.notificationQueue, completionHandler: { (maybeMetadata, maybeError) in
                 if maybeError == nil {
                     self.completion(.success(self.item))
                 } else {
@@ -54,7 +66,7 @@ class UploadOperation<T>: SyncOperation<T> where T: SyncItem {
             break
         case .timedOut:
             print(String(format: "Upload timed out for file: %@", item.filename))
-            request?.cancel()
+            self.request?.cancel()
         }
     }
 }

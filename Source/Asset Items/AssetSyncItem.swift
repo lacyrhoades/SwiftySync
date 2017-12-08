@@ -18,7 +18,7 @@ public struct AssetSyncItem: SyncItem {
         return formatter
     }()
     
-    static func uniqueFilename(forDate date: Date, withType type: AssetSyncItemType, consideringFilenames existingFilenames: Set<String>) -> String {
+    public static func uniqueFilename(forDate date: Date, withType type: AssetSyncItemType, consideringFilenames existingFilenames: Set<String>) -> String {
         
         let baseFilename = AssetSyncItem.dateFormatter.string(from: date)
         let fileExtension = AssetSyncItemType.fileExtension(forType: type)

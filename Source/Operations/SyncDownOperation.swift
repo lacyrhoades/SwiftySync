@@ -35,8 +35,24 @@ class SyncDownOperation<T>: SyncOperation<T> where T: SyncItem {
         super.init(basePath: basePath, client: client)
     }
     
+    override func cancel() {
+        super.cancel()
+        
+        for req in fetchRequests {
+            req.cancel()
+        }
+        
+        for req in continueRequests {
+            req.cancel()
+        }
+    }
+    
     override func main() {
-        print("SyncDownOperation")
+        guard self.isCancelled == false else {
+            return
+        }
+        
+        print("SyncDownOperation: main()")
         
         var allRemoteFilenames: Set<String> = []
         
@@ -58,6 +74,10 @@ class SyncDownOperation<T>: SyncOperation<T> where T: SyncItem {
                 .subtracting(self.failedFilenames)
 
             for filename in notYetDownloaded {
+                if self.isCancelled {
+                    break
+                }
+                
                 OperationQueue.current?.addOperation(
                     DownloadOperation<T>(
                         filename: filename,

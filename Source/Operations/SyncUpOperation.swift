@@ -25,8 +25,24 @@ class SyncUpOperation<T>: SyncOperation<T> where T: SyncItem {
         self.completion = completion
         super.init(basePath: basePath, client: client)
     }
+    
+    override func cancel() {
+        super.cancel()
+        
+        for request in fetchRequests {
+            request.cancel()
+        }
+        
+        for request in continueRequests {
+            request.cancel()
+        }
+    }
 
     override func main() {
+        if self.isCancelled {
+            return
+        }
+        
         print("SyncUpOperation")
         
         var remoteFilenames: Set<String> = []

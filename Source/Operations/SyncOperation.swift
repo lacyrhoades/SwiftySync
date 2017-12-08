@@ -11,6 +11,7 @@ import SwiftyDropbox
 
 class SyncOperation<T>: Operation where T: SyncItem {    
     var basePath: String
+    var fileSizeLimit: Int64 = 1024 * 1024 * 5
     var client: DropboxClient
     let notificationQueue = DispatchQueue(label: "SwiftyDropboxSync.operationNotification")
     
@@ -39,6 +40,7 @@ class SyncOperation<T>: Operation where T: SyncItem {
         
         if let cursor = cursor {
             group.enter()
+            print("Continue req")
             let request = client.files.listFolderContinue(cursor: cursor)
             request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
@@ -46,12 +48,25 @@ class SyncOperation<T>: Operation where T: SyncItem {
                 }
                 
                 andThen(Set(
-                    (maybeResult?.entries ?? []).map({ (eachMetadata) -> String in
-                        return eachMetadata.name
+                    (maybeResult?.entries ?? []).flatMap({ (eachMetadata) -> String? in
+                        guard let file = (eachMetadata as? Files.FileMetadata) else {
+                            // not a file
+                            return nil
+                        }
+                            
+                        if file.size > self.fileSizeLimit {
+                            // too big
+                            return nil
+                        }
+
+                        // Anything else needs to be sorted out by the user!
+                        return file.name
                     })
                 ))
                 
-                if maybeResult?.hasMore ?? false, let cursor = maybeResult?.cursor {
+                if (maybeResult?.entries.isEmpty ?? true) == false,
+                    maybeResult?.hasMore ?? false,
+                    let cursor = maybeResult?.cursor {
                     self.fetchBatch(includingDeleted: includingDeleted, usingGroup: group, withCursor: cursor, andThen: andThen)
                 }
                 
@@ -60,19 +75,33 @@ class SyncOperation<T>: Operation where T: SyncItem {
             self.continueRequests.append(request)
         } else {
             group.enter()
-            let request = client.files.listFolder(path: basePath, recursive: false, includeMediaInfo: true, includeDeleted: includingDeleted, includeHasExplicitSharedMembers: false)
+            print("List folder req")
+            let request = client.files.listFolder(path: basePath, recursive: false, includeMediaInfo: false, includeDeleted: includingDeleted, includeHasExplicitSharedMembers: false)
             request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
                     print(error)
                 }
                 
                 andThen(Set(
-                    (maybeResult?.entries ?? []).map({ (eachMetadata) -> String in
-                        return eachMetadata.name
+                    (maybeResult?.entries ?? []).flatMap({ (eachMetadata) -> String? in
+                        guard let file = (eachMetadata as? Files.FileMetadata) else {
+                            // not a file
+                            return nil
+                        }
+                        
+                        if file.size > self.fileSizeLimit {
+                            // too big
+                            return nil
+                        }
+                        
+                        // Anything else needs to be sorted out by the user!
+                        return file.name
                     })
                 ))
                 
-                if maybeResult?.hasMore ?? false, let cursor = maybeResult?.cursor {
+                if (maybeResult?.entries.isEmpty ?? true) == false,
+                    maybeResult?.hasMore ?? false,
+                    let cursor = maybeResult?.cursor {
                     self.fetchBatch(includingDeleted: includingDeleted, usingGroup: group, withCursor: cursor, andThen: andThen)
                 }
                 

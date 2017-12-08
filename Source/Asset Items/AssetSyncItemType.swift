@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum AssetSyncItemType {
+public enum AssetSyncItemType {
     case image
     case video
     
