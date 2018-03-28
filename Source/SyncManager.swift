@@ -20,7 +20,7 @@ public class SyncSettings {
 public class SyncManager<T> where T: SyncItem {
     var client: DropboxClient
     public var basePath: String = "/"
-    var syncInterval: TimeInterval = 5.0
+    public var syncInterval: TimeInterval = 30.0
     
     private var syncAttempts: Int = 0
     private var repeatTimer: Timer?
@@ -40,6 +40,7 @@ public class SyncManager<T> where T: SyncItem {
     
     public var finishedUploads: Set<T> = Set()
     public var finishedUploadsDidChange: (() -> ())?
+    public var didSyncUp: (() -> ())?
     
     var failedUploads: Set<T> = Set()
     var failedUploadsDidChange: (() -> ())?
@@ -150,6 +151,8 @@ public class SyncManager<T> where T: SyncItem {
                 }
             )
         )
+        
+        self.didSyncUp?()
     }
     
     func syncDown() {

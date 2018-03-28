@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Photos
 
 public enum AssetSyncItemType {
     case image
@@ -18,6 +19,16 @@ public enum AssetSyncItemType {
             return "jpg"
         case .video:
             return "mp4"
+        }
+    }
+    
+    public static func type(forMediaType: PHAssetMediaType) -> AssetSyncItemType? {
+        switch forMediaType {
+        case .image:
+            return .image
+        case .video:
+            return .video
+        default: return nil
         }
     }
 }

@@ -34,7 +34,7 @@ public struct AssetSyncItem: SyncItem {
         return filename
     }
     
-    init(id: String, filename: String) {
+    public init(id: String, filename: String) {
         self.id = id
         self.filename = filename
     }

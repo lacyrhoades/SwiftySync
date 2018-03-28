@@ -40,7 +40,6 @@ class SyncOperation<T>: Operation where T: SyncItem {
         
         if let cursor = cursor {
             group.enter()
-            print("Continue req")
             let request = client.files.listFolderContinue(cursor: cursor)
             request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
@@ -75,7 +74,6 @@ class SyncOperation<T>: Operation where T: SyncItem {
             self.continueRequests.append(request)
         } else {
             group.enter()
-            print("List folder req")
             let request = client.files.listFolder(path: basePath, recursive: false, includeMediaInfo: false, includeDeleted: includingDeleted, includeHasExplicitSharedMembers: false)
             request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
