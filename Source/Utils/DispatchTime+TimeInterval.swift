@@ -9,7 +9,7 @@
 import Foundation
 
 extension DispatchTime {
-    public static func seconds(_ seconds: TimeInterval) -> DispatchTime {
+    static func seconds(_ seconds: TimeInterval) -> DispatchTime {
         return DispatchTime.now() + seconds
     }
 }
