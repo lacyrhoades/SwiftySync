@@ -23,8 +23,8 @@ class DownloadsBackend: NSObject {
     var finishedFilenames: Set<String> = []
     var downloadedItems: [String: AssetSyncItem] = [:]
     
-    func add(_ data: Data, forFilename: String, andThen: @escaping () -> ()) {
-        print("Save data to camera roll: \(data.count)")
+    func add(_ data: Data, withGUID guid: String, forFilename filename: String, andThen: @escaping () -> ()) {
+        print("Save data to camera roll: \(filename) - \(guid) (\(data.count))")
 //        if let image = UIImage(data: data) {
 //            ImageUtil.save(image, toAlbumNamed: "SwiftySync") { (maybeAssetID) in
 //                if let assetID = maybeAssetID {

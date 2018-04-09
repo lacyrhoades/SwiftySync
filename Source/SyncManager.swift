@@ -186,7 +186,7 @@ public class SyncManager<T> where T: SyncItem {
                     self.downloadComplete?(result)
                     
                     switch result {
-                    case .success(let filename, _):
+                    case .success(_, let filename, _):
                         self.finishedDownloads.insert(filename)
                         self.finishedDownloadsDidChange?()
                     case .fail(let filename):

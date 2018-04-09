@@ -10,7 +10,7 @@ import Foundation
 import SwiftyDropbox
 
 public enum DownloadItemActionResult {
-    case success(_: String, _: Data)
+    case success(_: String, _: String, _: Data)
     case fail(_: String)
 }
 

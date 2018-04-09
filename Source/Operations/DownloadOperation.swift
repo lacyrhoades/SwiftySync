@@ -42,8 +42,8 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
                 print(error)
             }
             
-            if let data = maybeResult?.1 {
-                self.didDownload(.success(self.filename, data))
+            if let data = maybeResult?.1, let info = maybeResult?.0 {
+                self.didDownload(.success(info.id, self.filename, data))
             } else {
                 self.didDownload(.fail(self.filename))
             }

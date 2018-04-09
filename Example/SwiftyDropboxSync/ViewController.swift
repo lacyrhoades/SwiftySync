@@ -70,8 +70,8 @@ class ViewController: UIViewController {
             result in
             
             switch result {
-            case .success(let filename, let data):
-                self.downloadsBackend.add(data, forFilename: filename) {
+            case .success(let guid, let filename, let data):
+                self.downloadsBackend.add(data, withGUID: guid, forFilename: filename) {
                     self.downloadsBackend.refresh()
                 }
             case .fail(let filename):
@@ -300,7 +300,7 @@ class ViewController: UIViewController {
     @objc func didToggleEnabled(_ toggle: UISwitch) {
         if toggle.isOn {
             self.enableLabel.text = "Now Syncing"
-            self.sync?.beginSyncing(self.direction)
+            self.sync?.startSyncing(self.direction)
         } else {
             self.enableLabel.text = "Syncing Off"
             self.sync?.stopSyncing()
