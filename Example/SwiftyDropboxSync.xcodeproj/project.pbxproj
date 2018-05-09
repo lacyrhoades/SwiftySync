@@ -620,7 +620,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HZT822U3RS;
-				INFOPLIST_FILE = SwiftyDropboxSync/Info.plist;
+				INFOPLIST_FILE = SwiftyDropboxSync/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.colordeaf.SwiftyDropboxSync;
@@ -637,7 +637,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HZT822U3RS;
-				INFOPLIST_FILE = SwiftyDropboxSync/Info.plist;
+				INFOPLIST_FILE = SwiftyDropboxSync/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.colordeaf.SwiftyDropboxSync;
