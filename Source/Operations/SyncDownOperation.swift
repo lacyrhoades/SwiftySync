@@ -1,13 +1,12 @@
 //
 //  SyncDownOperation.swift
-//  SwiftyDropboxSync
+//  SwiftySync
 //
 //  Created by Lacy Rhoades on 12/1/17.
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
 //
 
 import Foundation
-import SwiftyDropbox
 
 public enum DownloadItemActionResult {
     case success(_: String, _: String, _: Data)
@@ -26,7 +25,7 @@ class SyncDownOperation<T>: SyncOperation<T> where T: SyncItem {
         refreshRemoteItems: @escaping SyncManager<T>.RemoteCollectionRefreshAction,
         downloadComplete: @escaping SyncManager<T>.DownloadCompleteAction,
         basePath: String,
-        client: DropboxClient
+        client: SyncClient
     ) {
         self.finishedFilenames = finishedDownloads
         self.failedFilenames = failedDownloads

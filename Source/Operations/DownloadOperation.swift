@@ -13,7 +13,7 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
     var filename: String
     var didDownload: SyncManager<T>.DownloadCompleteAction
     
-    init(filename: String, basePath: String, client: DropboxClient, didDownload: @escaping SyncManager<T>.DownloadCompleteAction) {
+    init(filename: String, basePath: String, client: SyncClient, didDownload: @escaping SyncManager<T>.DownloadCompleteAction) {
         self.filename = filename
         self.didDownload = didDownload
         super.init(basePath: basePath, client: client)
@@ -24,7 +24,7 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
         self.request?.cancel()
     }
     
-    var request: DownloadRequestMemory<Files.FileMetadataSerializer, Files.DownloadErrorSerializer>?
+    var request: SyncRequest?
     
     override func main() {
         guard self.isCancelled == false else {
@@ -37,19 +37,19 @@ class DownloadOperation<T>: SyncOperation<T> where T: SyncItem {
         
         waitGroup.enter()
         
-        self.request = client.files.download(path: self.fullPath(forFilename: filename)).response(queue: self.notificationQueue, completionHandler: { (maybeResult, maybeError) in
+        self.request = client.download(path: self.fullPath(forFilename: filename)).response(queue: self.notificationQueue) { (maybeResult, maybeError) in
             if let error = maybeError {
                 print(error)
             }
             
-            if let data = maybeResult?.1, let info = maybeResult?.0 {
+            if let data = maybeResult?.downloadData, let info = maybeResult?.downloadInfo {
                 self.didDownload(.success(info.id, self.filename, data))
             } else {
                 self.didDownload(.fail(self.filename))
             }
             
             waitGroup.leave()
-        })
+        }
         
         let result = waitGroup.wait(timeout: DispatchTime.seconds(SyncSettings.maximumNetworkTimeout))
         

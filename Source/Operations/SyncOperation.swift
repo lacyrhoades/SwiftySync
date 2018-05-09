@@ -7,15 +7,14 @@
 //
 
 import Foundation
-import SwiftyDropbox
 
 class SyncOperation<T>: Operation where T: SyncItem {    
     var basePath: String
     var fileSizeLimit: Int64 = 1024 * 1024 * 5
-    var client: DropboxClient
-    let notificationQueue = DispatchQueue(label: "SwiftyDropboxSync.operationNotification")
+    var client: SyncClient
+    let notificationQueue = DispatchQueue(label: "SwiftySync.operationNotification")
     
-    init(basePath: String, client: DropboxClient) {
+    init(basePath: String, client: SyncClient) {
         var basePath = basePath
         
         if basePath.isEmpty || basePath == "/" {
@@ -33,37 +32,32 @@ class SyncOperation<T>: Operation where T: SyncItem {
         return basePath.appending("/").appending(forFilename)
     }
     
-    var fetchRequests: [RpcRequest<Files.ListFolderResultSerializer, Files.ListFolderErrorSerializer>] = []
-    var continueRequests: [RpcRequest<Files.ListFolderResultSerializer, Files.ListFolderContinueErrorSerializer>] = []
+    var fetchRequests: [SyncRequest] = []
+    var continueRequests: [SyncRequest] = []
     
     func fetchBatch(includingDeleted: Bool, usingGroup group: DispatchGroup, withCursor cursor: String? = nil, andThen: @escaping (_: Set<String>) -> ()) {
         
         if let cursor = cursor {
             group.enter()
-            let request = client.files.listFolderContinue(cursor: cursor)
+            let request = client.listFolder(path: basePath, startingWithCursor: cursor)
             request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
                     print(error)
                 }
                 
                 andThen(Set(
-                    (maybeResult?.entries ?? []).flatMap({ (eachMetadata) -> String? in
-                        guard let file = (eachMetadata as? Files.FileMetadata) else {
-                            // not a file
-                            return nil
-                        }
-                            
-                        if file.size > self.fileSizeLimit {
+                    (maybeResult?.files ?? []).flatMap({ (eachFile) -> String? in
+                        if eachFile.size > self.fileSizeLimit {
                             // too big
                             return nil
                         }
 
                         // Anything else needs to be sorted out by the user!
-                        return file.name
+                        return eachFile.name
                     })
                 ))
                 
-                if (maybeResult?.entries.isEmpty ?? true) == false,
+                if (maybeResult?.files.isEmpty ?? true) == false,
                     maybeResult?.hasMore ?? false,
                     let cursor = maybeResult?.cursor {
                     self.fetchBatch(includingDeleted: includingDeleted, usingGroup: group, withCursor: cursor, andThen: andThen)
@@ -74,30 +68,24 @@ class SyncOperation<T>: Operation where T: SyncItem {
             self.continueRequests.append(request)
         } else {
             group.enter()
-            let request = client.files.listFolder(path: basePath, recursive: false, includeMediaInfo: false, includeDeleted: includingDeleted, includeHasExplicitSharedMembers: false)
-            request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
+            let request = client.listFolder(path: basePath).response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
                     print(error)
                 }
                 
                 andThen(Set(
-                    (maybeResult?.entries ?? []).flatMap({ (eachMetadata) -> String? in
-                        guard let file = (eachMetadata as? Files.FileMetadata) else {
-                            // not a file
-                            return nil
-                        }
-                        
-                        if file.size > self.fileSizeLimit {
+                    (maybeResult?.files ?? []).compactMap({ (eachFile) -> String? in
+                        if eachFile.size > self.fileSizeLimit {
                             // too big
                             return nil
                         }
                         
                         // Anything else needs to be sorted out by the user!
-                        return file.name
+                        return eachFile.name
                     })
                 ))
                 
-                if (maybeResult?.entries.isEmpty ?? true) == false,
+                if (maybeResult?.files.isEmpty ?? true) == false,
                     maybeResult?.hasMore ?? false,
                     let cursor = maybeResult?.cursor {
                     self.fetchBatch(includingDeleted: includingDeleted, usingGroup: group, withCursor: cursor, andThen: andThen)

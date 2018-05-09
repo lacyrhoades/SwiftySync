@@ -1,18 +1,17 @@
 //
 //  DeleteOperation.swift
-//  SwiftyDropboxSync
+//  SwiftySync
 //
 //  Created by Lacy Rhoades on 12/1/17.
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
 //
 
 import Foundation
-import SwiftyDropbox
 
 class DeleteOperation<T>: SyncOperation<T> where T: SyncItem {
     var item: T
     
-    init(item: T, basePath: String, client: DropboxClient) {
+    init(item: T, basePath: String, client: SyncClient) {
         self.item = item
         super.init(basePath: basePath, client: client)
     }
@@ -25,7 +24,7 @@ class DeleteOperation<T>: SyncOperation<T> where T: SyncItem {
         let waitGroup = DispatchGroup()
         waitGroup.enter()
         
-        let request = client.files.deleteV2(path: path).response(queue: self.notificationQueue) { (maybeResult, maybeError) in
+        let request = client.delete(path: path) {
             waitGroup.leave()
         }
         

@@ -30,8 +30,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func setupSync() {
-        if let client = DropboxClientsManager.authorizedClient {
-            sync = SyncManager<AssetSyncItem>(client: client)
+        if let dropboxClient = DropboxClientsManager.authorizedClient {
+            let syncClient = DropboxSyncClient(dropboxClient: dropboxClient)
+            sync = SyncManager<AssetSyncItem>(client: syncClient)
         }
         
         if let mainVC = (self.window?.rootViewController as? ViewController) {

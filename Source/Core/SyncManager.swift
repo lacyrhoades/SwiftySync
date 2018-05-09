@@ -6,7 +6,7 @@
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
 //
 
-import SwiftyDropbox
+import Foundation
 
 public enum Direction {
     case up // sync some collection of fetchLocalItems() -> [T] to a remote destination
@@ -18,14 +18,14 @@ public class SyncSettings {
 }
 
 public class SyncManager<T> where T: SyncItem {
-    var client: DropboxClient
+    var client: SyncClient
     public var basePath: String = "/"
     public var syncInterval: TimeInterval = 30.0
     
     private var syncAttempts: Int = 0
     private var repeatTimer: Timer?
     
-    public init(client: DropboxClient) {
+    public init(client: SyncClient) {
         self.client = client
     }
     

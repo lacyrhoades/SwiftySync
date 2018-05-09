@@ -1,12 +1,12 @@
 //
 //  SyncUpOperation.swift
-//  SwiftyDropboxSync
+//  SwiftySync
 //
 //  Created by Lacy Rhoades on 12/1/17.
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
 //
 
-import SwiftyDropbox
+import Foundation
 
 enum SyncItemActionResult<T> {
     case success(T)
@@ -20,7 +20,7 @@ class SyncUpOperation<T>: SyncOperation<T> where T: SyncItem {
     var fullCollection: Set<T>
     var completion: SyncItemAction<T>
     
-    init(fullCollection: Set<T>, basePath: String, client: DropboxClient, completion: @escaping SyncItemAction<T>) {
+    init(fullCollection: Set<T>, basePath: String, client: SyncClient, completion: @escaping SyncItemAction<T>) {
         self.fullCollection = fullCollection
         self.completion = completion
         super.init(basePath: basePath, client: client)
