@@ -1,6 +1,6 @@
 //
 //  DispatchTime+TimeInterval.swift
-//  SwiftyDropboxSync
+//  SwiftySync
 //
 //  Created by Lacy Rhoades on 12/1/17.
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.

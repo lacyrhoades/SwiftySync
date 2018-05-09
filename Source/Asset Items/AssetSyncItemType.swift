@@ -1,6 +1,6 @@
 //
 //  AssetSyncItemType.swift
-//  SwiftyDropboxSync
+//  SwiftySync
 //
 //  Created by Lacy Rhoades on 12/2/17.
 //  Copyright © 2017 Lacy Rhoades. All rights reserved.
