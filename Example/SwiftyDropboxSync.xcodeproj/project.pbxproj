@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F3FD53220A4AA4E00B6CECA /* SMBSyncClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3FD53120A4AA4E00B6CECA /* SMBSyncClient.swift */; };
+		0F3FD53420A4AABF00B6CECA /* SMBRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3FD53320A4AABF00B6CECA /* SMBRequest.swift */; };
 		0F7377F21FD1C71E007999D3 /* UploadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7377F11FD1C71E007999D3 /* UploadOperation.swift */; };
 		0F7377F41FD1E1C5007999D3 /* WrapperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7377F31FD1E1C5007999D3 /* WrapperView.swift */; };
 		0F7377F61FD1E471007999D3 /* DownloadBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F7377F51FD1E471007999D3 /* DownloadBackend.swift */; };
@@ -52,6 +54,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0F3FD53120A4AA4E00B6CECA /* SMBSyncClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMBSyncClient.swift; sourceTree = "<group>"; };
+		0F3FD53320A4AABF00B6CECA /* SMBRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMBRequest.swift; sourceTree = "<group>"; };
 		0F7377F11FD1C71E007999D3 /* UploadOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadOperation.swift; sourceTree = "<group>"; };
 		0F7377F31FD1E1C5007999D3 /* WrapperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrapperView.swift; sourceTree = "<group>"; };
 		0F7377F51FD1E471007999D3 /* DownloadBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadBackend.swift; sourceTree = "<group>"; };
@@ -168,6 +172,8 @@
 			isa = PBXGroup;
 			children = (
 				0FC7C61E20A38ABE00D5C0B0 /* DropboxSyncClient.swift */,
+				0F3FD53120A4AA4E00B6CECA /* SMBSyncClient.swift */,
+				0F3FD53320A4AABF00B6CECA /* SMBRequest.swift */,
 			);
 			path = Adapters;
 			sourceTree = "<group>";
@@ -387,11 +393,13 @@
 				"${SRCROOT}/Pods/Target Support Files/Pods-SwiftyDropboxSync/Pods-SwiftyDropboxSync-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyDropbox/SwiftyDropbox.framework",
+				"${BUILT_PRODUCTS_DIR}/TOSMBClient/TOSMBClient.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyDropbox.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TOSMBClient.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -442,6 +450,7 @@
 				0FEBC0571FD08C97004D516D /* SyncManager.swift in Sources */,
 				0FEBC05B1FD0B60A004D516D /* AssetBackend.swift in Sources */,
 				0F7378021FD3215F007999D3 /* AssetSyncItemType.swift in Sources */,
+				0F3FD53420A4AABF00B6CECA /* SMBRequest.swift in Sources */,
 				0F7377FE1FD2177F007999D3 /* FileUtil.swift in Sources */,
 				0FEBC0691FD0CDC3004D516D /* AssetSyncItem.swift in Sources */,
 				0FEBC0361FCF5F0E004D516D /* ViewController.swift in Sources */,
@@ -458,6 +467,7 @@
 				0FEBC0671FD0CD93004D516D /* AssetFetcher.swift in Sources */,
 				0FEBC0651FD0CD2F004D516D /* DataFetchResult.swift in Sources */,
 				0F7377FC1FD216B9007999D3 /* ImageUtil.swift in Sources */,
+				0F3FD53220A4AA4E00B6CECA /* SMBSyncClient.swift in Sources */,
 				0F7377FA1FD1F820007999D3 /* DownloadOperation.swift in Sources */,
 				0F7377F41FD1E1C5007999D3 /* WrapperView.swift in Sources */,
 				0FEBC0551FCF707F004D516D /* DropboxUtil.swift in Sources */,

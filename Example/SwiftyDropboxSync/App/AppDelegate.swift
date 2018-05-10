@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftyDropbox
+import TOSMBClient
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -30,8 +31,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func setupSync() {
-        if let dropboxClient = DropboxClientsManager.authorizedClient {
-            let syncClient = DropboxSyncClient(dropboxClient: dropboxClient)
+        enum SyncMethod {
+            case dropbox
+            case smbShare
+        }
+        
+        let syncMethod: SyncMethod = .smbShare
+        
+        switch syncMethod {
+        case .dropbox:
+            if let dropboxClient = DropboxClientsManager.authorizedClient {
+                let syncClient = DropboxSyncClient(dropboxClient: dropboxClient)
+                sync = SyncManager<AssetSyncItem>(client: syncClient)
+            }
+        case .smbShare:
+            let session = TOSMBSession(hostName: "fobo-24", ipAddress: "192.168.2.5")
+            session!.setLoginCredentialsWithUserName("fobo24", password: "mvs384")
+            let syncClient = SMBSyncClient(session: session!)
             sync = SyncManager<AssetSyncItem>(client: syncClient)
         }
         

@@ -3,4 +3,5 @@ platform :ios, '10.3'
 
 target 'SwiftyDropboxSync' do
 pod 'SwiftyDropbox'
+pod 'TOSMBClient'
 end

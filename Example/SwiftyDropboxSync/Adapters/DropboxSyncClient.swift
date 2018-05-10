@@ -9,6 +9,7 @@
 import SwiftyDropbox
 
 struct DropboxRequest: SyncRequest {
+    
     var uploadRequest: UploadRequest<Files.FileMetadataSerializer, Files.UploadErrorSerializer>?
     init(_ req: UploadRequest<Files.FileMetadataSerializer, Files.UploadErrorSerializer>) {
         self.uploadRequest = req
@@ -65,7 +66,7 @@ struct DropboxRequest: SyncRequest {
                 }) ?? []
                 var collection = SyncFileCollection(files: files, hasMore: maybeMetadata?.hasMore ?? false)
                 collection.cursor = maybeMetadata?.cursor
-                andThen(nil, nil)
+                andThen(collection, nil)
             }
         })
         
@@ -73,7 +74,16 @@ struct DropboxRequest: SyncRequest {
             if let error = maybeError {
                 andThen(nil, SyncError(message: "Error continuing to list folder contents \(self.downloadRequest.debugDescription) \(error.description)"))
             } else {
-                andThen(nil, nil)
+                let files = maybeMetadata?.entries.compactMap({ (each) -> SyncFileMetadata? in
+                    if let file = (each as? Files.FileMetadata) {
+                        return SyncFileMetadata(size: file.size, name: file.name)
+                    } else {
+                        return nil
+                    }
+                }) ?? []
+                var collection = SyncFileCollection(files: files, hasMore: maybeMetadata?.hasMore ?? false)
+                collection.cursor = maybeMetadata?.cursor
+                andThen(collection, nil)
             }
         })
         
@@ -102,9 +112,14 @@ struct DropboxRequest: SyncRequest {
 }
 
 class DropboxSyncClient: SyncClient {
+    
     var dropboxClient: DropboxClient
     init(dropboxClient: DropboxClient) {
         self.dropboxClient = dropboxClient
+    }
+    
+    var requiresLeadingSlashForRoot: Bool {
+        return false
     }
     
     func download(path: String) -> SyncRequest {

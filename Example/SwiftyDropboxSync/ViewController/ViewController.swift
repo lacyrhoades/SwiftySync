@@ -279,14 +279,14 @@ class ViewController: UIViewController {
     
     @objc func didToggleDirection(_ toggle: UISwitch) {
         if toggle.isOn {
-            self.directionLabel.text = "Sync Down from Dropbox"
+            self.directionLabel.text = "Sync Down"
             self.direction = .down
             self.assetTableView.isHidden = true
             self.selectButton.isHidden = true
             self.downloadsTableView.isHidden = false
             self.downloadsBackend.refresh()
         } else {
-            self.directionLabel.text = "Sync Up to Dropbox"
+            self.directionLabel.text = "Sync Up"
             self.direction = .up
             self.downloadsTableView.isHidden = true
             self.selectButton.isHidden = false

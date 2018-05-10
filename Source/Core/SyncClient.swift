@@ -14,4 +14,5 @@ public protocol SyncClient {
     func listFolder(path: String, startingWithCursor: String) -> SyncRequest
     func upload(data: Data, toPath: String) -> SyncRequest
     func download(path: String) -> SyncRequest
+    var requiresLeadingSlashForRoot: Bool { get }
 }

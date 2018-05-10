@@ -17,10 +17,14 @@ class SyncOperation<T>: Operation where T: SyncItem {
     init(basePath: String, client: SyncClient) {
         var basePath = basePath
         
-        if basePath.isEmpty || basePath == "/" {
+        if client.requiresLeadingSlashForRoot && (basePath.isEmpty || basePath == "/") {
             basePath = ""
         } else if basePath.starts(with: "/") == false {
             basePath = "/".appending(basePath)
+        }
+        
+        if basePath.count > 1 && basePath.last == "/" {
+            basePath.removeLast()
         }
         
         self.basePath = basePath
