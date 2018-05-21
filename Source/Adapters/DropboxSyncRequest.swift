@@ -1,8 +1,8 @@
 //
-//  DropboxSyncClient.swift
+//  DropboxSyncRequest.swift
 //  SwiftyDropboxSync
 //
-//  Created by Lacy Rhoades on 5/9/18.
+//  Created by Lacy Rhoades on 5/10/18.
 //  Copyright © 2018 Lacy Rhoades. All rights reserved.
 //
 
@@ -109,36 +109,4 @@ struct DropboxRequest: SyncRequest {
         return self
     }
     
-}
-
-class DropboxSyncClient: SyncClient {
-    
-    var dropboxClient: DropboxClient
-    init(dropboxClient: DropboxClient) {
-        self.dropboxClient = dropboxClient
-    }
-    
-    var requiresLeadingSlashForRoot: Bool {
-        return false
-    }
-    
-    func download(path: String) -> SyncRequest {
-        return DropboxRequest(dropboxClient.files.download(path: path))
-    }
-    
-    func delete(path: String, andThen: () -> ()) -> SyncRequest {
-        return DropboxRequest(dropboxClient.files.deleteV2(path: path))
-    }
-    
-    func listFolder(path: String) -> SyncRequest {
-        return DropboxRequest(dropboxClient.files.listFolder(path: path))
-    }
-    
-    func listFolder(path: String, startingWithCursor cursor: String) -> SyncRequest {
-        return DropboxRequest(dropboxClient.files.listFolderContinue(cursor: cursor))
-    }
-    
-    func upload(data: Data, toPath path: String) -> SyncRequest {
-        return DropboxRequest(dropboxClient.files.upload(path: path, input: data))
-    }
 }

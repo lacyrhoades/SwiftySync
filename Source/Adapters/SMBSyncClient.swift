@@ -9,18 +9,18 @@
 import Foundation
 import TOSMBClient
 
-class SMBSyncClient: SyncClient {
+public class SMBSyncClient: SyncClient {
     
-    var requiresLeadingSlashForRoot: Bool {
+    public var requiresLeadingSlashForRoot: Bool {
         return true
     }
     
-    func delete(path: String, andThen: () -> ()) -> SyncRequest {
+    public func delete(path: String, andThen: () -> ()) -> SyncRequest {
         assert(false, "Not supported yet!")
         return SMBRequest()
     }
     
-    func listFolder(path: String) -> SyncRequest {
+    public func listFolder(path: String) -> SyncRequest {
         let session = self.session
         let req = SMBRequest(list: { success, error in
             session.requestContentsOfDirectory(atFilePath: path, success: {
@@ -41,17 +41,17 @@ class SMBSyncClient: SyncClient {
         return req
     }
     
-    func listFolder(path: String, startingWithCursor: String) -> SyncRequest {
+    public func listFolder(path: String, startingWithCursor: String) -> SyncRequest {
         assert(false, "Not supported yet!")
         return SMBRequest()
     }
     
-    func upload(data: Data, toPath: String) -> SyncRequest {
+    public func upload(data: Data, toPath: String) -> SyncRequest {
         assert(false, "Not supported yet!")
         return SMBRequest()
     }
     
-    func download(path: String) -> SyncRequest {
+    public func download(path: String) -> SyncRequest {
         let session = self.session
         
         let req = SMBRequest(download: { start, success, error in
@@ -83,7 +83,7 @@ class SMBSyncClient: SyncClient {
     }
     
     var session: TOSMBSession
-    init(session: TOSMBSession) {
+    public init(session: TOSMBSession) {
         self.session = session
     }
 }

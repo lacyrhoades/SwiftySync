@@ -9,4 +9,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '10.0'
   s.requires_arc = true
   s.ios.source_files = 'Source/**/*'
+  s.dependency "SwiftyDropbox"
+  s.dependency "TOSMBClient"
 end
