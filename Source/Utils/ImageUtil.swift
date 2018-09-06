@@ -13,6 +13,8 @@ public typealias AssetID = String
 
 class ImageUtil {
     
+    public static var fetchQueue = DispatchQueue(label: "SwiftySync.ImageFetchQueue")
+    
     static var originalsAlbumName = "Fobo Originals"
     static var defaultAlbumName = "Fobo"
     static var videosAlbumName = "Fobo Videos"
@@ -64,7 +66,7 @@ class ImageUtil {
     }
     
     static func save(_ image: UIImage, toAlbumNamed albumName: String, andThen: @escaping (AssetID?) -> ()) {
-        DispatchQueue.global().async {
+        ImageUtil.fetchQueue.async {
             if let album = ImageUtil.findOrCreateFoboAlbum(named: albumName) {
                 var localIdentifier: String? = nil
                 PHPhotoLibrary.shared().performChanges({
