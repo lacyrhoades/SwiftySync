@@ -9,7 +9,7 @@
 import UIKit
 
 class WrapperView: UIStackView {
-    init(_ views: [UIView], axis: UILayoutConstraintAxis, centered: Bool) {
+    init(_ views: [UIView], axis: NSLayoutConstraint.Axis, centered: Bool) {
         super.init(frame: .zero)
         
         let leading = UIView()

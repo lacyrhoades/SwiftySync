@@ -110,7 +110,7 @@ public class AssetFetcher {
                 }
                 
                 if let image = maybeImage {
-                    result.data = UIImageJPEGRepresentation(image, 0.5)
+                    result.data = image.jpegData(compressionQuality: 0.5)
                 }
                 
                 result.error = result.isEmpty ? "Fetch failed" : nil

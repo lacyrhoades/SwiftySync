@@ -78,7 +78,7 @@ public class SyncManager<T> where T: SyncItem {
                 self.startSyncing(direction)
             })
             self.repeatTimer = timer
-            RunLoop.main.add(timer, forMode: .commonModes)
+            RunLoop.main.add(timer, forMode: .common)
         }
     }
     

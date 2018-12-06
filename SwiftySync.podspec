@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "SwiftySync"
-  s.version          = "0.9"
+  s.version          = "1.0"
   s.summary          = "Set of tools to sync a collection of data up to a remote source, or down from a remote location"
   s.homepage         = "https://github.com/lacyrhoades/SwiftySync"
   s.license          = { type: 'MIT', file: 'LICENSE' }
