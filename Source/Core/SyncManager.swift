@@ -86,6 +86,7 @@ public class SyncManager<T> where T: SyncItem {
         self.repeatTimer?.invalidate()
         self.syncAttempts = 0
         self.queue.cancelAllOperations()
+        self.finishedUploads = Set()
     }
 
     func syncUp() {
