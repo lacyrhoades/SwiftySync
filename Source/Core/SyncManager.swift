@@ -134,23 +134,24 @@ public class SyncManager<T> where T: SyncItem {
         // Do an upload for anything not mentioned as failed or finished
         let toBeUploaded = fullCollection.subtracting(failedUploads).subtracting(finishedUploads)
         
-        self.queue.addOperation(
-            SyncUpOperation(
-                fullCollection: toBeUploaded,
-                basePath: self.basePath,
-                client: self.client,
-                completion: {
-                    result in
-                    switch result {
-                    case .success(let item):
-                        self.finishedUploads.insert(item)
-                        self.finishedUploadsDidChange?()
-                    case .fail(let item):
-                        self.failedUploads.insert(item)
-                        self.failedUploadsDidChange?()
-                    }
+        let extractedExpr = SyncUpOperation(
+            fullCollection: toBeUploaded,
+            basePath: self.basePath,
+            client: self.client,
+            completion: {
+                result in
+                switch result {
+                case .success(let item):
+                    self.finishedUploads.insert(item)
+                    self.finishedUploadsDidChange?()
+                case .fail(let item):
+                    self.failedUploads.insert(item)
+                    self.failedUploadsDidChange?()
                 }
-            )
+            }
+        )
+        self.queue.addOperation(
+            extractedExpr
         )
         
         self.didSyncUp?()

@@ -11,4 +11,5 @@ Pod::Spec.new do |s|
   s.ios.source_files = 'Source/**/*'
   s.dependency "SwiftyDropbox"
   s.dependency "TOSMBClient"
+  s.dependency "GoogleAPIClientForREST/Drive"
 end

@@ -9,11 +9,13 @@
 import Foundation
 import TOSMBClient
 
+typealias ErrorAction = (String) -> ()
+
 typealias ListSuccessAction = ([SyncFileMetadata]) -> ()
+typealias SMBListRequestAction = (@escaping ListSuccessAction, @escaping ErrorAction) -> ()
+
 typealias DownloadSuccessAction = (Data, String) -> ()
 typealias DownloadStartAction = (TOSMBSessionDownloadTask) -> ()
-typealias ErrorAction = (String) -> ()
-typealias SMBListRequestAction = (@escaping ListSuccessAction, @escaping ErrorAction) -> ()
 typealias SMBDownloadRequestAction = (@escaping DownloadStartAction, @escaping DownloadSuccessAction, @escaping ErrorAction) -> ()
 
 class SMBRequest: SyncRequest {

@@ -42,13 +42,11 @@ public class SMBSyncClient: SyncClient {
     }
     
     public func listFolder(path: String, startingWithCursor: String) -> SyncRequest {
-        assert(false, "Not supported yet!")
-        return SMBRequest()
+        fatalError("Not supported")
     }
     
     public func upload(data: Data, toPath: String) -> SyncRequest {
-        assert(false, "Not supported yet!")
-        return SMBRequest()
+        fatalError("Not supported")
     }
     
     public func download(path: String) -> SyncRequest {
