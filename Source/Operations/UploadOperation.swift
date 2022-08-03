@@ -40,11 +40,12 @@ class UploadOperation<T>: SyncOperation<T> where T: SyncItem {
         let fetchResult = item.fetchData()
         
         if let data = fetchResult.validData {
-            let path = self.fullPath(forFilename: item.filename)
+            let basePath = self.basePath
+            let filename = item.filename
             
-            print(String(format: "UploadOperation: Item upload start to path: %@", path))
+            print(String(format: "UploadOperation: Item upload start to base path: %@ named: %@", basePath, filename))
             
-            self.request = client.upload(data: data, toPath: path).response(queue: self.notificationQueue) { (maybeMetadata, maybeError) in
+            self.request = client.upload(data: data, named: filename, atPath: basePath).response(queue: self.notificationQueue) { (maybeMetadata, maybeError) in
                 if maybeError == nil {
                     self.completion(.success(self.item))
                 } else {

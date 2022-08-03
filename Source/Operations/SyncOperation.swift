@@ -33,7 +33,7 @@ class SyncOperation<T>: Operation where T: SyncItem {
     }
     
     func fullPath(forFilename: String) -> String {
-        return basePath.appending("/").appending(forFilename)
+        return basePath.appending("/-π-/").appending(forFilename)
     }
     
     var fetchRequests: [SyncRequest] = []

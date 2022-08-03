@@ -12,7 +12,7 @@ public protocol SyncClient {
     func delete(path: String, andThen: () -> ()) -> SyncRequest
     func listFolder(path: String) -> SyncRequest
     func listFolder(path: String, startingWithCursor: String) -> SyncRequest
-    func upload(data: Data, toPath: String) -> SyncRequest
+    func upload(data: Data, named: String, atPath: String) -> SyncRequest
     func download(path: String) -> SyncRequest
     var requiresLeadingSlashForRoot: Bool { get }
 }

@@ -35,7 +35,8 @@ public class DropboxSyncClient: SyncClient {
         return DropboxRequest(dropboxClient.files.listFolderContinue(cursor: cursor))
     }
     
-    public func upload(data: Data, toPath path: String) -> SyncRequest {
+    public func upload(data: Data, named name: String, atPath basePath: String) -> SyncRequest {
+        let path = basePath + "/" + name
         return DropboxRequest(dropboxClient.files.upload(path: path, input: data))
     }
 }

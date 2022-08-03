@@ -45,7 +45,7 @@ public class SMBSyncClient: SyncClient {
         fatalError("Not supported")
     }
     
-    public func upload(data: Data, toPath: String) -> SyncRequest {
+    public func upload(data: Data, named: String, atPath: String) -> SyncRequest {
         fatalError("Not supported")
     }
     

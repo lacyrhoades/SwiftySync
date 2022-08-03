@@ -27,35 +27,17 @@ public class GoogleClient: SyncClient {
     }
     
     public func listFolder(path: String) -> SyncRequest {
-        return GoogleRequest(list: { [unowned self] success, error in
-            
-            let fileID = self.fileID(forPath: path)
-            let pathComponents = GoogleDriveFile.pathComponents(using: path)
-            
-            let query = GTLRDriveQuery_FilesList.query()
-            query.q = "'\(fileID)' in parents"
-            query.pageSize = 100
-            query.fields = "files(id,kind,mimeType,name,size,iconLink,thumbnailLink,parents)"
-            query.orderBy = "folder,modifiedTime desc,name"
-            
-            var results: [SyncFileMetadata] = []
-            self.service.executeQuery(query, completionHandler: { (ticket, what, err) in
-                if let err = err {
-                    error(err.localizedDescription)
-                    return
-                }
-                
-                for file in (what as? GTLRDrive_FileList)?.files ?? [] {
-                    let item = GoogleDriveFile(file, atPath: pathComponents)
-                    self.addFileID(item.id, forPathKey: item.pathKey)
-                    if let size = file.size, let name = file.name {
-                        results.append(SyncFileMetadata(size: UInt64(truncating: size), name: name))
+        return GoogleRequest(list: { [unowned self] success, failure in
+            self.service.findFileID(forPath: path, then: { parentID in
+                self.service.listContents(using: parentID) { contents, error in
+                    if let error = error {
+                        failure(error.localizedDescription)
+                    } else if let contents = contents {
+                        success(contents)
                     }
                 }
-                
-                DispatchQueue.main.async {
-                    success(results)
-                }
+            }, orElse: {
+                failure("File not found")
             })
         })
     }
@@ -64,27 +46,15 @@ public class GoogleClient: SyncClient {
         fatalError()
     }
     
-    public func upload(data: Data, toPath path: String) -> SyncRequest {
-        return GoogleRequest(upload: { [unowned self] data, path, success, error in
-            let metadata = GTLRDrive_File()
-            metadata.name = "last path component"
-            metadata.mimeType = "weird google style type"
-            metadata.parents = ["fileId of parent folder"]
-            
-            let params = GTLRUploadParameters(data: data , mimeType: "image/jpg")
-            params.shouldUploadWithSingleRequest = true
-            
-            let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: params)
-            query.fields = "id"
-            
-            self.service.executeQuery(query, completionHandler: { (ticket, what, err) in
-                if let err = err {
-                    error(err.localizedDescription)
-                    return
+    public func upload(data: Data, named name: String, atPath path: String) -> SyncRequest {
+        return GoogleRequest(upload: { [unowned self] result in
+            self.service.findFileID(forPath: path) { fileID in
+                self.service.doUpload(data: data, named: name, inParent: fileID) { error in
+                    result(error)
                 }
-                
-                success()
-            })
+            } orElse: {
+                result("File not found")
+            }
         })
     }
     
@@ -148,6 +118,20 @@ struct GoogleDriveFile {
     static func pathComponents(using path: String) -> [String] {
         return path.components(separatedBy: GoogleDriveFile.pathSeparator)
     }
+    
+    static func mimeType(basedOn name: String) -> String {
+        var mimeType = "image/jpeg"
+        if name.debugDescription.localizedCaseInsensitiveContains(".png") {
+            mimeType = "image/png"
+        }
+        if name.debugDescription.localizedCaseInsensitiveContains(".mp4") {
+            mimeType = "video/mp4"
+        }
+        if name.debugDescription.localizedCaseInsensitiveContains(".mov") {
+            mimeType = "video/mov"
+        }
+        return mimeType
+    }
 }
 
 extension Array {
@@ -155,5 +139,102 @@ extension Array {
         var contents = self
         contents.append(suffix)
         return contents
+    }
+}
+
+extension GTLRDriveService {
+    func findFileID(forPath path: String, then: @escaping (String) -> (), orElse: @escaping () -> ()) {
+        self.findFileID(forPath: path, inParent: nil, then: then, orElse: orElse)
+    }
+    
+    func findFileID(forPath path: String, inParent parentID: String?, then: @escaping (String) -> (), orElse: @escaping () -> ()) {
+        var path = path
+        
+        if path.starts(with: "/") {
+            path.removeFirst()
+        }
+        
+        let parts = path.components(separatedBy: GoogleDriveFile.pathSeparator)
+        
+        if parts.count == 1 {
+            self.queryFileID(forFilename: path, inParent: parentID, then: then, orElse: orElse)
+        } else if let first = parts.first {
+            self.queryFileID(
+                forFilename: first,
+                inParent: parentID,
+                then: { fileID in
+                    let remainder = parts.dropFirst().joined(separator: GoogleDriveFile.pathSeparator)
+                    self.findFileID(forPath: remainder, inParent: fileID, then: then, orElse: orElse)
+                },
+                orElse: orElse
+            )
+        }
+    }
+    
+    func queryFileID(forFilename filename: String, inParent parentID: String?, then: @escaping (String) -> (), orElse: @escaping () -> ()) {
+        
+        let parentID: String = parentID ?? "root"
+        
+        let query = GTLRDriveQuery_FilesList.query()
+        query.q = "name = '\(filename)' and '\(parentID)' in parents"
+        query.fields = "files(id)"
+        
+        self.executeQuery(query, completionHandler: { (ticket, result, err) in
+            let matchingFiles = (result as? GTLRDrive_FileList)?.files ?? []
+            
+            if let file = matchingFiles.first, let id = file.identifier {
+                then(id)
+            } else {
+                orElse()
+            }
+        })
+    }
+    
+    func listContents(using fileID: String, then: @escaping ([SyncFileMetadata]?, Error?) -> ()) {
+        let query = GTLRDriveQuery_FilesList.query()
+        query.q = "'\(fileID)' in parents"
+        query.pageSize = 1000
+        query.fields = "files(name,size)"
+        
+        self.executeQuery(query, completionHandler: { (ticket, what, err) in
+            if let err = err {
+                then(nil, err)
+                return
+            }
+            
+            var results: [SyncFileMetadata] = []
+            for file in (what as? GTLRDrive_FileList)?.files ?? [] {
+                if let size = file.size, let name = file.name {
+                    results.append(SyncFileMetadata(size: UInt64(truncating: size), name: name))
+                }
+            }
+            
+            DispatchQueue.main.async {
+                then(results, nil)
+            }
+        })
+    }
+
+    func doUpload(data: Data, named name: String, inParent parentID: String, then: @escaping (String?) -> ()) {
+        let mimeType = GoogleDriveFile.mimeType(basedOn: name)
+        
+        let metadata = GTLRDrive_File()
+        metadata.name = name
+        metadata.mimeType = mimeType
+        metadata.parents = [parentID]
+        
+        let params = GTLRUploadParameters(data: data , mimeType: mimeType)
+        params.shouldUploadWithSingleRequest = true
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: metadata, uploadParameters: params)
+        query.fields = "id"
+        
+        self.executeQuery(query, completionHandler: { (ticket, what, err) in
+            if let err = err {
+                then(err.localizedDescription)
+            } else {
+                then(nil)
+            }
+        })
     }
 }
