@@ -38,12 +38,21 @@ public class SyncManager<T> where T: SyncItem {
     public typealias DownloadCompleteAction = (DownloadItemActionResult) -> ()
     public var downloadComplete: DownloadCompleteAction?
     
-    public var finishedUploads: Set<T> = Set()
-    public var finishedUploadsDidChange: (() -> ())?
+    public var finishedUploads: Set<T> = Set() {
+        didSet {
+            self.notifyStatsChanged()
+        }
+    }
+    
     public var didSyncUp: (() -> ())?
     
-    var failedUploads: Set<T> = Set()
-    var failedUploadsDidChange: (() -> ())?
+    var failedUploads: Set<T> = Set() {
+        didSet {
+            self.notifyStatsChanged()
+        }
+    }
+    
+    public var uploadStatsDidChange: ((UploadStats) -> ())?
     
     public var finishedDownloads: Set<String> = Set()
     var finishedDownloadsDidChange: (() -> ())?
@@ -95,6 +104,8 @@ public class SyncManager<T> where T: SyncItem {
             return
         }
         
+        totalCount = fullCollection.count
+        
         var before = failedUploads.count
         
         if self.syncAttempts % 10 == 0 {
@@ -106,10 +117,6 @@ public class SyncManager<T> where T: SyncItem {
         failedUploads = failedUploads.intersection(fullCollection)
         
         var after = failedUploads.count
-        
-        if before != after {
-            self.failedUploadsDidChange?()
-        }
         
         // Delete anything that's finished but that's gone away from the full collection
         let toBeDeleted = finishedUploads.subtracting(fullCollection)
@@ -127,10 +134,6 @@ public class SyncManager<T> where T: SyncItem {
         
         after = finishedUploads.count
         
-        if before != after {
-            self.finishedUploadsDidChange?()
-        }
-        
         // Do an upload for anything not mentioned as failed or finished
         let toBeUploaded = fullCollection.subtracting(failedUploads).subtracting(finishedUploads)
         
@@ -143,10 +146,10 @@ public class SyncManager<T> where T: SyncItem {
                 switch result {
                 case .success(let item):
                     self.finishedUploads.insert(item)
-                    self.finishedUploadsDidChange?()
+                    self.notifyStatsChanged()
                 case .fail(let item):
                     self.failedUploads.insert(item)
-                    self.failedUploadsDidChange?()
+                    self.notifyStatsChanged()
                 }
             }
         )
@@ -155,6 +158,11 @@ public class SyncManager<T> where T: SyncItem {
         )
         
         self.didSyncUp?()
+    }
+    
+    var totalCount: Int = 0
+    func notifyStatsChanged() {
+        self.uploadStatsDidChange?(UploadStats(total: totalCount, done: finishedUploads.count, failed: failedUploads.count))
     }
     
     func syncDown() {
@@ -201,4 +209,10 @@ public class SyncManager<T> where T: SyncItem {
             )
         )
     }
+}
+
+public struct UploadStats {
+    public var total: Int
+    public var done: Int
+    public var failed: Int
 }
