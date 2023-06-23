@@ -9,7 +9,8 @@
 import Foundation
 
 enum SyncItemActionResult<T> {
-    case success(T)
+    case alreadyExists(T)
+    case uploaded(T)
     case fail(T)
 }
 
@@ -72,7 +73,7 @@ class SyncUpOperation<T>: SyncOperation<T> where T: SyncItem {
             let existingItems = fullCollection.subtracting(missingItems)
             
             for item in existingItems {
-                completion(.success(item))
+                completion(.alreadyExists(item))
             }
         case .timedOut:
             print("SyncUpOperation: Remote listing timed out")

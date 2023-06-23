@@ -9,7 +9,7 @@ import GoogleAPIClientForREST
 
 typealias GoogleErrorAction = (String) -> ()
 
-typealias GoogleListSuccessAction = ([SyncFileMetadata]) -> ()
+typealias GoogleListSuccessAction = ([SyncFileMetadata], String?) -> ()
 typealias GoogleListRequestAction = (@escaping GoogleListSuccessAction, @escaping GoogleErrorAction) -> ()
 
 typealias GoogleUploadResult = (String?) -> ()
@@ -28,9 +28,13 @@ struct GoogleRequest: SyncRequest {
     
     func response(queue: DispatchQueue, andThen: @escaping (SyncFileCollection?, Error?) -> ()) -> SyncRequest {
         self.queue.addOperation {
-            self.listAction?({ files in
+            self.listAction?({ files, cursor in
                 queue.async {
-                    andThen(SyncFileCollection(files: files, hasMore: false), nil)
+                    let hasMore = (cursor != nil)
+                    var collection = SyncFileCollection(files: files, hasMore: hasMore)
+                    collection.cursor = cursor
+                    andThen(collection, nil)
+                    
                 }
             }, {
                 error in

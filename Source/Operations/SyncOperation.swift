@@ -44,13 +44,13 @@ class SyncOperation<T>: Operation where T: SyncItem {
         if let cursor = cursor {
             group.enter()
             let request = client.listFolder(path: basePath, startingWithCursor: cursor)
-            request.response(queue: self.notificationQueue) { (maybeResult, maybeError) in
+                .response(queue: self.notificationQueue) { (maybeResult, maybeError) in
                 if let error = maybeError {
                     print(error)
                 }
                 
                 andThen(Set(
-                    (maybeResult?.files ?? []).flatMap({ (eachFile) -> String? in
+                    (maybeResult?.files ?? []).compactMap({ (eachFile) -> String? in
                         if eachFile.size > self.fileSizeLimit {
                             // too big
                             return nil

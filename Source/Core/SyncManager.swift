@@ -106,8 +106,6 @@ public class SyncManager<T> where T: SyncItem {
         
         totalCount = fullCollection.count
         
-        var before = failedUploads.count
-        
         if self.syncAttempts % 10 == 0 {
             // retry failures every 10 cycles
             failedUploads = []
@@ -115,8 +113,6 @@ public class SyncManager<T> where T: SyncItem {
         
         // make sure all the failures still exist in the full set
         failedUploads = failedUploads.intersection(fullCollection)
-        
-        var after = failedUploads.count
         
         // Delete anything that's finished but that's gone away from the full collection
         let toBeDeleted = finishedUploads.subtracting(fullCollection)
@@ -127,13 +123,9 @@ public class SyncManager<T> where T: SyncItem {
             )
         }
         
-        before = finishedUploads.count
-        
         // Make sure all the "finished" items are still from the full set
         finishedUploads = finishedUploads.intersection(fullCollection)
-        
-        after = finishedUploads.count
-        
+
         // Do an upload for anything not mentioned as failed or finished
         let toBeUploaded = fullCollection.subtracting(failedUploads).subtracting(finishedUploads)
         
@@ -144,7 +136,11 @@ public class SyncManager<T> where T: SyncItem {
             completion: {
                 result in
                 switch result {
-                case .success(let item):
+                case .alreadyExists(let item):
+                    self.finishedUploads.insert(item)
+                    self.notifyStatsChanged()
+                case .uploaded(let item):
+                    print("SwiftySync > Uploaded: \(item.filename)")
                     self.finishedUploads.insert(item)
                     self.notifyStatsChanged()
                 case .fail(let item):
@@ -153,6 +149,7 @@ public class SyncManager<T> where T: SyncItem {
                 }
             }
         )
+        
         self.queue.addOperation(
             extractedExpr
         )
@@ -161,7 +158,7 @@ public class SyncManager<T> where T: SyncItem {
     }
     
     var totalCount: Int = 0
-    func notifyStatsChanged() {
+    public func notifyStatsChanged() {
         self.uploadStatsDidChange?(UploadStats(total: totalCount, done: finishedUploads.count, failed: failedUploads.count))
     }
     
@@ -212,7 +209,13 @@ public class SyncManager<T> where T: SyncItem {
 }
 
 public struct UploadStats {
-    public var total: Int
-    public var done: Int
-    public var failed: Int
+    public init(total: Int = 0, done: Int = 0, failed: Int = 0) {
+        self.total = total
+        self.done = done
+        self.failed = failed
+    }
+    
+    public var total: Int = 0
+    public var done: Int = 0
+    public var failed: Int = 0
 }

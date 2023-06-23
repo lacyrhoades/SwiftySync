@@ -29,11 +29,11 @@ public class GoogleClient: SyncClient {
     public func listFolder(path: String) -> SyncRequest {
         return GoogleRequest(list: { [unowned self] success, failure in
             self.service.findFileID(forPath: path, then: { parentID in
-                self.service.listContents(using: parentID) { contents, error in
+                self.service.listContents(using: parentID) { contents, cursor, error in
                     if let error = error {
                         failure(error.localizedDescription)
                     } else if let contents = contents {
-                        success(contents)
+                        success(contents, cursor)
                     }
                 }
             }, orElse: {
@@ -43,7 +43,19 @@ public class GoogleClient: SyncClient {
     }
     
     public func listFolder(path: String, startingWithCursor cursor: String) -> SyncRequest {
-        fatalError()
+        return GoogleRequest(list: { [unowned self] success, failure in
+            self.service.findFileID(forPath: path, then: { parentID in
+                self.service.listContents(using: parentID, afterCursor: cursor) { contents, cursor, error in
+                    if let error = error {
+                        failure(error.localizedDescription)
+                    } else if let contents = contents {
+                        success(contents, cursor)
+                    }
+                }
+            }, orElse: {
+                failure("File not found")
+            })
+        })
     }
     
     public func upload(data: Data, named name: String, atPath path: String) -> SyncRequest {
@@ -190,27 +202,38 @@ extension GTLRDriveService {
         })
     }
     
-    func listContents(using fileID: String, then: @escaping ([SyncFileMetadata]?, Error?) -> ()) {
+    func listContents(using fileID: String, afterCursor cursor: String? = nil, then: @escaping ([SyncFileMetadata]?, String?, Error?) -> ()) {
         let query = GTLRDriveQuery_FilesList.query()
         query.q = "'\(fileID)' in parents"
         query.pageSize = 1000
-        query.fields = "files(name,size)"
+        query.fields = "files(name,size),nextPageToken"
+        query.pageToken = cursor
         
         self.executeQuery(query, completionHandler: { (ticket, what, err) in
             if let err = err {
-                then(nil, err)
+                then(nil, nil, err)
                 return
             }
             
             var results: [SyncFileMetadata] = []
-            for file in (what as? GTLRDrive_FileList)?.files ?? [] {
+           
+            guard let list = (what as? GTLRDrive_FileList) else {
+                then(nil, nil, GoogleClientError.invalidResponse)
+                return
+            }
+            
+            let all = list.files ?? []
+            
+            for file in all {
                 if let size = file.size, let name = file.name {
                     results.append(SyncFileMetadata(size: UInt64(truncating: size), name: name))
                 }
             }
             
+            let cursor = list.nextPageToken
+            
             DispatchQueue.main.async {
-                then(results, nil)
+                then(results, cursor, nil)
             }
         })
     }
@@ -237,4 +260,8 @@ extension GTLRDriveService {
             }
         })
     }
+}
+
+enum GoogleClientError: Error {
+    case invalidResponse
 }

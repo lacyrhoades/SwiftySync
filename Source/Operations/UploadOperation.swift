@@ -47,7 +47,7 @@ class UploadOperation<T>: SyncOperation<T> where T: SyncItem {
             
             self.request = client.upload(data: data, named: filename, atPath: basePath).response(queue: self.notificationQueue) { (maybeMetadata, maybeError) in
                 if maybeError == nil {
-                    self.completion(.success(self.item))
+                    self.completion(.uploaded(self.item))
                 } else {
                     self.completion(.fail(self.item))
                 }
